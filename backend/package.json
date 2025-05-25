@@ -1,0 +1,25 @@
+{
+  "name": "document-template-editor-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Document Template Editor",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "docx": "^7.8.0",
+    "docxtemplater": "^3.37.9",
+    "express": "^4.18.2",
+    "mammoth": "^1.5.1",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.11.0",
+    "pg-hstore": "^2.3.4",
+    "pizzip": "^3.1.4",
+    "sequelize": "^6.32.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

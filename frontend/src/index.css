@@ -1,0 +1,69 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Reset some default styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Improve button and input styling */
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Improve link styling */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Improve heading styles */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Improve paragraph styles */
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+/* Improve table styles */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Improve form styles */
+form {
+  margin-bottom: 1rem;
+}
+
+/* Improve image styles */
+img {
+  max-width: 100%;
+  height: auto;
+}

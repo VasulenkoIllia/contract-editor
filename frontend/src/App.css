@@ -1,0 +1,90 @@
+/* General Styles */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  flex: 1;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: auto;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+}
+
+/* Template Editor Styles */
+.preview-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-container {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 70vh;
+  border: 1px solid #dee2e6;
+  background-color: white;
+  padding: 20px;
+}
+
+.document-preview {
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.5;
+}
+
+/* Highlight placeholders in edit mode */
+.placeholder-highlight {
+  background-color: #fffacd;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px dashed #ffd700;
+}
+
+/* Form Styles */
+.form-label {
+  font-weight: 500;
+}
+
+/* Upload Form Styles */
+.upload-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.file-drop-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 5px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.file-drop-area:hover, .file-drop-area.active {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Templates List Styles */
+.contracts-list {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .preview-container {
+    max-height: 50vh;
+  }
+}

@@ -1,0 +1,42 @@
+const { Sequelize } = require('sequelize');
+
+// Create a new Sequelize instance
+const sequelize = new Sequelize('contract_editor', 'postgres', 'postgres', {
+  host: 'localhost',
+  dialect: 'postgres',
+  port: 5432,
+  logging: console.log,
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
+  }
+});
+
+// Test the connection
+const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+};
+
+// Initialize database
+const initDb = async () => {
+  try {
+    // Sync all models
+    await sequelize.sync({ alter: true });
+    console.log('Database synchronized successfully');
+  } catch (error) {
+    console.error('Error synchronizing database:', error);
+  }
+};
+
+module.exports = {
+  sequelize,
+  testConnection,
+  initDb
+};
