@@ -138,7 +138,7 @@ DB_HOST=db
 DB_PORT=5432
 DB_NAME=contract_editor
 DB_USER=postgres
-DB_PASSWORD=your_secure_password
+DB_PASSWORD=postgres
 ```
 
 ### 3.3. Update Docker Compose Configuration
@@ -161,7 +161,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_secure_password
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: contract_editor
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -182,7 +182,7 @@ services:
       - DB_PORT=5432
       - DB_NAME=contract_editor
       - DB_USER=postgres
-      - DB_PASSWORD=your_secure_password
+      - DB_PASSWORD=postgres
     volumes:
       - ./backend/uploads:/app/uploads
     networks:
