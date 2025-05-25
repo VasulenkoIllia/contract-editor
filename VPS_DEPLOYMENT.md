@@ -123,22 +123,33 @@ cd contract-editor
 
 ### 3.2. Create Environment Files
 
-Create a `.env` file for environment variables:
+The project uses a `.env` file for environment variables. An example file (`.env.example`) is provided in the repository.
+
+Copy the example file to create your own `.env` file:
 
 ```bash
-nano .env
+cp backend/.env.example backend/.env
 ```
 
-Add the following content:
+Edit the `.env` file to set your production values:
+
+```bash
+nano backend/.env
+```
+
+Add the following content, adjusting values as needed:
 
 ```
-NODE_ENV=production
-PORT=5000
-DB_HOST=db
-DB_PORT=5432
+# Database Configuration
 DB_NAME=contract_editor
 DB_USER=postgres
 DB_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+
+# Server Configuration
+PORT=5000
+NODE_ENV=production
 ```
 
 ### 3.3. Update Docker Compose Configuration
@@ -299,7 +310,7 @@ Add the following content:
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com www.your-domain.com;
+    server_name _;
 
     location / {
         root /usr/share/nginx/html;

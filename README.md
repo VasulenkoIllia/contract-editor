@@ -62,7 +62,13 @@ For Docker-based setup instructions, see [DOCKER.md](DOCKER.md)
    npm install
    ```
 
-3. Start the server:
+3. Create a .env file in the backend directory:
+   ```
+   cp .env.example .env
+   ```
+   Then edit the .env file to set your database credentials and other configuration options.
+
+4. Start the server:
    ```
    npm start
    ```

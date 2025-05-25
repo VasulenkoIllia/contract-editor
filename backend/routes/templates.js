@@ -4,7 +4,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const mammoth = require('mammoth');
-const { Document, Packer, Paragraph, TextRun } = require('docx');
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
