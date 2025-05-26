@@ -121,7 +121,7 @@ const TemplateEditor = () => {
       // Check if this is a customer field
       if (placeholderLower.startsWith('{customer.')) {
         // Extract the field name after customer.
-        const fieldName = fieldWithoutBraces.split('.')[1];
+        const fieldName = fieldWithoutBraces.split('.')[1].toLowerCase();
 
         // Map specific fields - only if the field is empty or if we have a value to replace it
         if (fieldName === 'company' && counterparty.company && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
@@ -140,8 +140,10 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.code;
         } else if (fieldName === 'individualcode' && counterparty.individualCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.individualCode;
-        } else if (fieldName === 'document' && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((fieldName === 'documentname' || fieldName === 'document') && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
+        } else if (fieldName === 'name' && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.name;
         }
       }
       // More general matching for customer-related fields
@@ -158,16 +160,18 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.address;
         } else if (placeholderLower.includes('bank') && !placeholderLower.includes('code') && !placeholderLower.includes('account') && counterparty.bank && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bank;
-        } else if ((placeholderLower.includes('bankaccount') || placeholderLower.includes('bank_account')) && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('bankaccount') || placeholderLower.includes('bank_account') || placeholderLower.includes('bankAccount')) && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bankAccount;
-        } else if ((placeholderLower.includes('bankcode') || placeholderLower.includes('bank_code')) && counterparty.bankCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('bankcode') || placeholderLower.includes('bank_code') || placeholderLower.includes('bankCode')) && counterparty.bankCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bankCode;
         } else if (placeholderLower.includes('code') && !placeholderLower.includes('bank') && !placeholderLower.includes('individual') && counterparty.code && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.code;
-        } else if ((placeholderLower.includes('individualcode') || placeholderLower.includes('individual_code')) && counterparty.individualCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('individualcode') || placeholderLower.includes('individual_code') || placeholderLower.includes('individualCode')) && counterparty.individualCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.individualCode;
-        } else if (placeholderLower.includes('document') && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('document') || placeholderLower.includes('documentname') || placeholderLower.includes('documentName')) && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
+        } else if (placeholderLower.includes('name') && !placeholderLower.includes('document') && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.name;
         }
       }
     });
@@ -193,7 +197,7 @@ const TemplateEditor = () => {
       // Check if this is a performer field
       if (placeholderLower.startsWith('{performer.')) {
         // Extract the field name after performer.
-        const fieldName = fieldWithoutBraces.split('.')[1];
+        const fieldName = fieldWithoutBraces.split('.')[1].toLowerCase();
 
         // Map specific fields - only if the field is empty or if we have a value to replace it
         if (fieldName === 'company' && counterparty.company && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
@@ -212,8 +216,10 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.code;
         } else if (fieldName === 'individualcode' && counterparty.individualCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.individualCode;
-        } else if (fieldName === 'document' && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((fieldName === 'documentname' || fieldName === 'document') && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
+        } else if (fieldName === 'name' && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.name;
         }
       }
       // More general matching for performer-related fields
@@ -232,16 +238,18 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.address;
         } else if (placeholderLower.includes('bank') && !placeholderLower.includes('code') && !placeholderLower.includes('account') && counterparty.bank && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bank;
-        } else if ((placeholderLower.includes('bankaccount') || placeholderLower.includes('bank_account')) && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('bankaccount') || placeholderLower.includes('bank_account') || placeholderLower.includes('bankAccount')) && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bankAccount;
-        } else if ((placeholderLower.includes('bankcode') || placeholderLower.includes('bank_code')) && counterparty.bankCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('bankcode') || placeholderLower.includes('bank_code') || placeholderLower.includes('bankCode')) && counterparty.bankCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bankCode;
         } else if (placeholderLower.includes('code') && !placeholderLower.includes('bank') && !placeholderLower.includes('individual') && counterparty.code && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.code;
-        } else if ((placeholderLower.includes('individualcode') || placeholderLower.includes('individual_code')) && counterparty.individualCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('individualcode') || placeholderLower.includes('individual_code') || placeholderLower.includes('individualCode')) && counterparty.individualCode && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.individualCode;
-        } else if (placeholderLower.includes('document') && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if ((placeholderLower.includes('document') || placeholderLower.includes('documentname') || placeholderLower.includes('documentName')) && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
+        } else if (placeholderLower.includes('name') && !placeholderLower.includes('document') && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.name;
         }
       }
     });
@@ -372,38 +380,13 @@ const TemplateEditor = () => {
     try {
       setPreviewLoading(true);
 
-      if (mode === 'xodo') {
-        try {
-          // For XODO mode, we need to get a PDF
-          const response = await axios.post(`/api/templates/${id}/export`, {
-            values
-          }, {
-            responseType: 'blob'
-          });
-
-          // Create a URL for the PDF blob
-          const pdfUrl = window.URL.createObjectURL(new Blob([response.data]));
-          setPreviewPdfUrl(pdfUrl);
-          setPreviewHtml(''); // Clear HTML preview when showing PDF
-        } catch (pdfErr) {
-          console.error('Error getting PDF for XODO preview:', pdfErr);
-          // If PDF generation fails, fall back to HTML preview
-          const htmlResponse = await axios.post(`/api/templates/${id}/preview`, {
-            values,
-            mode: 'final' // Use final mode for fallback
-          });
-          setPreviewHtml(htmlResponse.data.html);
-          setPreviewPdfUrl('');
-        }
-      } else {
-        // For edit and final modes, get HTML preview
-        const response = await axios.post(`/api/templates/${id}/preview`, {
-          values,
-          mode
-        });
-        setPreviewHtml(response.data.html);
-        setPreviewPdfUrl(''); // Clear PDF URL when showing HTML
-      }
+      // For edit and final modes, get HTML preview
+      const response = await axios.post(`/api/templates/${id}/preview`, {
+        values,
+        mode
+      });
+      setPreviewHtml(response.data.html);
+      setPreviewPdfUrl(''); // Clear PDF URL when showing HTML
     } catch (err) {
       console.error('Error getting preview:', err);
       // Don't set error state here to avoid disrupting the user experience
@@ -431,8 +414,6 @@ const TemplateEditor = () => {
     let newMode;
     if (previewMode === 'edit') {
       newMode = 'final';
-    } else if (previewMode === 'final') {
-      newMode = 'xodo';
     } else {
       newMode = 'edit';
     }
@@ -571,6 +552,22 @@ const TemplateEditor = () => {
     } finally {
       setExportLoading(false);
     }
+  };
+
+  // Reset form values to template defaults
+  const handleReset = () => {
+    // Initialize form values with empty strings
+    const initialValues = {};
+    template.placeholders.forEach(placeholder => {
+      initialValues[placeholder] = '';
+    });
+
+    setFormValues(initialValues);
+    getPreview(initialValues);
+
+    // Clear selected counterparties
+    setSelectedCustomer(null);
+    setSelectedPerformer(null);
   };
 
   if (loading) {
@@ -745,6 +742,16 @@ const TemplateEditor = () => {
                   ) : 'Save Values'}
                 </Button>
 
+                <div className="d-flex gap-2 mb-2">
+                  <Button
+                    variant="warning"
+                    onClick={handleReset}
+                    className="flex-grow-1"
+                  >
+                    Reset Fields
+                  </Button>
+                </div>
+
                 <Button
                   variant="primary"
                   onClick={handleExport}
@@ -774,9 +781,7 @@ const TemplateEditor = () => {
               >
                 {previewMode === 'edit'
                   ? 'Show Final View'
-                  : previewMode === 'final'
-                    ? 'Show XODO View'
-                    : 'Show Edit View'}
+                  : 'Show Edit View'}
               </Button>
             </Card.Header>
             <Card.Body className="preview-container">
@@ -785,17 +790,6 @@ const TemplateEditor = () => {
                   <Spinner animation="border" role="status">
                     <span className="visually-hidden">Loading preview...</span>
                   </Spinner>
-                </div>
-              ) : previewMode === 'xodo' && previewPdfUrl ? (
-                <div className="xodo-preview-container" style={{ height: '600px', width: '100%' }}>
-                  <iframe
-                    src={`https://www.xodo.com/app/#/viewer/url=${encodeURIComponent(previewPdfUrl)}`}
-                    title="XODO PDF Preview"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 'none' }}
-                    allowFullScreen
-                  />
                 </div>
               ) : (
                 <div

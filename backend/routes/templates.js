@@ -4,6 +4,62 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const mammoth = require('mammoth');
+const Template = require('../models/Template');
+
+// Helper function to create normalized values with field name variations
+const createNormalizedValues = (values) => {
+  const normalizedValues = { ...values };
+
+  // Define field name variations mapping
+  const fieldVariations = {
+    // Customer variations
+    '{customer.bankAccount}': ['{customer.bankacc}'],
+    '{customer.bankCode}': ['{customer.bankcode}'],
+    '{customer.individualCode}': ['{customer.individualcode}'],
+    '{customer.address}': ['{customer.adress}'],
+    '{customer.bank}': [],
+    '{customer.code}': [],
+    '{customer.company}': [],
+    '{customer.director}': [],
+    '{customer.documentName}': [],
+    '{customer.name}': [],
+
+    // Performer variations
+    '{performer.address}': ['{performer.adress}'],
+    '{performer.bankAccount}': ['{performer.bankacc}'],
+    '{performer.bankCode}': ['{performer.bankcode}'],
+    '{performer.individualCode}': ['{performer.individualcode}'],
+    '{performer.bank}': [],
+    '{performer.code}': [],
+    '{performer.documentName}': [],
+    '{performer.name}': []
+  };
+
+  // Create variations for each field
+  Object.entries(fieldVariations).forEach(([mainField, variations]) => {
+    if (normalizedValues[mainField]) {
+      // If main field has a value, copy it to all variations
+      variations.forEach(variation => {
+        normalizedValues[variation] = normalizedValues[mainField];
+      });
+    } else {
+      // If main field doesn't have a value, check if any variation has a value
+      variations.forEach(variation => {
+        if (normalizedValues[variation]) {
+          normalizedValues[mainField] = normalizedValues[variation];
+          // Copy to other variations too
+          variations.forEach(otherVar => {
+            if (otherVar !== variation) {
+              normalizedValues[otherVar] = normalizedValues[variation];
+            }
+          });
+        }
+      });
+    }
+  });
+
+  return normalizedValues;
+};
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -34,7 +90,7 @@ const upload = multer({
   }
 });
 
-// In-memory storage for templates and their values (in a real app, this would be a database)
+// In-memory storage for templates and their values
 const templates = [];
 const templateValues = {}; // Store values for each template
 
@@ -66,22 +122,28 @@ router.post('/', upload.single('template'), async (req, res) => {
     const filePath = req.file.path;
     const placeholders = await extractPlaceholders(filePath);
 
-    const template = {
-      id: Date.now().toString(),
+    // Create template in database
+    const dbTemplate = await Template.create({
       originalName: req.file.originalname,
       filename: req.file.filename,
-      path: filePath,
-      uploadDate: new Date(),
-      placeholders
-    };
+      path: filePath
+    });
 
+    // Store in in-memory storage as well
+    const template = {
+      id: dbTemplate.id.toString(),
+      originalName: dbTemplate.originalName,
+      filename: dbTemplate.filename,
+      path: dbTemplate.path,
+      uploadDate: dbTemplate.createdAt
+    };
     templates.push(template);
 
     res.status(201).json({
-      id: template.id,
-      originalName: template.originalName,
-      uploadDate: template.uploadDate,
-      placeholders: template.placeholders
+      id: dbTemplate.id,
+      originalName: dbTemplate.originalName,
+      uploadDate: dbTemplate.createdAt,
+      placeholders: placeholders
     });
   } catch (error) {
     console.error('Error uploading template:', error);
@@ -90,37 +152,63 @@ router.post('/', upload.single('template'), async (req, res) => {
 });
 
 // GET /api/templates - Get all templates
-router.get('/', (req, res) => {
-  const templatesList = templates.map(template => ({
-    id: template.id,
-    originalName: template.originalName,
-    uploadDate: template.uploadDate,
-    placeholders: template.placeholders
-  }));
+router.get('/', async (req, res) => {
+  try {
+    // Fetch templates from database
+    const dbTemplates = await Template.findAll({
+      attributes: ['id', 'originalName', 'createdAt', 'path']
+    });
 
-  res.json(templatesList);
+    // For each template, extract placeholders
+    const templatesList = await Promise.all(dbTemplates.map(async template => {
+      const placeholders = await extractPlaceholders(template.path);
+      return {
+        id: template.id,
+        originalName: template.originalName,
+        uploadDate: template.createdAt,
+        placeholders: placeholders
+      };
+    }));
+
+    res.json(templatesList);
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    res.status(500).json({ message: 'Failed to fetch templates' });
+  }
 });
 
 // GET /api/templates/:id - Get a specific template
-router.get('/:id', (req, res) => {
-  const template = templates.find(t => t.id === req.params.id);
+router.get('/:id', async (req, res) => {
+  try {
+    // Fetch template from database
+    const template = await Template.findByPk(req.params.id, {
+      attributes: ['id', 'originalName', 'createdAt', 'path']
+    });
 
-  if (!template) {
-    return res.status(404).json({ message: 'Template not found' });
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    // Extract placeholders from the template file
+    const placeholders = await extractPlaceholders(template.path);
+
+    res.json({
+      id: template.id,
+      originalName: template.originalName,
+      uploadDate: template.createdAt,
+      placeholders: placeholders
+    });
+  } catch (error) {
+    console.error('Error fetching template:', error);
+    res.status(500).json({ message: 'Failed to fetch template' });
   }
-
-  res.json({
-    id: template.id,
-    originalName: template.originalName,
-    uploadDate: template.uploadDate,
-    placeholders: template.placeholders
-  });
 });
 
 // POST /api/templates/:id/preview - Generate a preview with values
 router.post('/:id/preview', async (req, res) => {
   try {
-    const template = templates.find(t => t.id === req.params.id);
+    // Fetch template from database
+    const template = await Template.findByPk(req.params.id);
 
     if (!template) {
       return res.status(404).json({ message: 'Template not found' });
@@ -132,9 +220,15 @@ router.post('/:id/preview', async (req, res) => {
     const result = await mammoth.convertToHtml({ path: template.path });
     let html = result.value;
 
+    // Create normalized values with field name variations
+    const normalizedValues = createNormalizedValues(values);
+
+    // Extract placeholders from the template file
+    const placeholders = await extractPlaceholders(template.path);
+
     // Replace placeholders with values
-    template.placeholders.forEach(placeholder => {
-      const value = values[placeholder] || '';
+    placeholders.forEach(placeholder => {
+      const value = normalizedValues[placeholder] || '';
 
       // Escape special characters in the placeholder for regex
       const escapedPlaceholder = escapeRegExp(placeholder);
@@ -161,7 +255,8 @@ router.post('/:id/preview', async (req, res) => {
 // POST /api/templates/:id/export - Export the final document
 router.post('/:id/export', async (req, res) => {
   try {
-    const template = templates.find(t => t.id === req.params.id);
+    // Fetch template from database
+    const template = await Template.findByPk(req.params.id);
 
     if (!template) {
       return res.status(404).json({ message: 'Template not found' });
@@ -169,17 +264,25 @@ router.post('/:id/export', async (req, res) => {
 
     // Use saved values if they exist, otherwise use the values from the request
     let { values } = req.body;
-    const savedValues = templateValues[req.params.id];
 
+    // Get values from in-memory storage
+    const savedValues = templateValues[req.params.id];
     if (savedValues) {
       // Merge saved values with any new values from the request
       values = { ...savedValues, ...values };
       console.log('Using saved values for export');
     }
 
+    // Create normalized values with field name variations
+    const normalizedValues = createNormalizedValues(values);
+
+    // Extract placeholders from the template file
+    const placeholders = await extractPlaceholders(template.path);
+
     // Log for debugging
-    console.log('Exporting document with placeholders:', template.placeholders);
+    console.log('Exporting document with placeholders:', placeholders);
     console.log('Values provided:', Object.keys(values).length);
+    console.log('Normalized values provided:', Object.keys(normalizedValues).length);
 
     try {
       // First try with docxtemplater
@@ -203,10 +306,10 @@ router.post('/:id/export', async (req, res) => {
         // Prepare the data for docxtemplater
         // Convert from {placeholder} format to placeholder format
         const data = {};
-        Object.keys(values).forEach(key => {
+        Object.keys(normalizedValues).forEach(key => {
           // Remove the curly braces from the key
           const cleanKey = key.replace(/[{}]/g, '');
-          data[cleanKey] = values[key];
+          data[cleanKey] = normalizedValues[key];
         });
 
         // Set the template variables
@@ -263,8 +366,8 @@ router.post('/:id/export', async (req, res) => {
         let content = zip.files[fileName].asText();
 
         // Replace each placeholder with its value
-        template.placeholders.forEach(placeholder => {
-          const value = values[placeholder] || '';
+        placeholders.forEach(placeholder => {
+          const value = normalizedValues[placeholder] || '';
           // Escape special XML characters in the value
           const escapedValue = value
             .replace(/&/g, '&amp;')
@@ -317,9 +420,10 @@ function escapeRegExp(string) {
 }
 
 // POST /api/templates/:id/values - Save template values
-router.post('/:id/values', (req, res) => {
+router.post('/:id/values', async (req, res) => {
   try {
-    const template = templates.find(t => t.id === req.params.id);
+    // Check if template exists in database
+    const template = await Template.findByPk(req.params.id);
 
     if (!template) {
       return res.status(404).json({ message: 'Template not found' });
@@ -327,7 +431,7 @@ router.post('/:id/values', (req, res) => {
 
     const { values } = req.body;
 
-    // Save the values for this template
+    // Save the values to in-memory storage
     templateValues[req.params.id] = values;
 
     console.log(`Saved values for template ${req.params.id}`);
@@ -343,17 +447,17 @@ router.post('/:id/values', (req, res) => {
 });
 
 // GET /api/templates/:id/values - Get saved template values
-router.get('/:id/values', (req, res) => {
+router.get('/:id/values', async (req, res) => {
   try {
-    const template = templates.find(t => t.id === req.params.id);
+    // Check if template exists in database
+    const template = await Template.findByPk(req.params.id);
 
     if (!template) {
       return res.status(404).json({ message: 'Template not found' });
     }
 
-    // Get the saved values for this template or return empty object if none exist
+    // Get values from in-memory storage
     const values = templateValues[req.params.id] || {};
-
     res.status(200).json(values);
   } catch (error) {
     console.error('Error getting template values:', error);
@@ -362,29 +466,42 @@ router.get('/:id/values', (req, res) => {
 });
 
 // DELETE /api/templates/:id - Delete a template
-router.delete('/:id', (req, res) => {
-  const templateIndex = templates.findIndex(t => t.id === req.params.id);
-
-  if (templateIndex === -1) {
-    return res.status(404).json({ message: 'Template not found' });
-  }
-
-  const template = templates[templateIndex];
-
-  // Remove the file
+router.delete('/:id', async (req, res) => {
   try {
-    fs.unlinkSync(template.path);
+    // Find the template in the database
+    const template = await Template.findByPk(req.params.id);
+
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    // Get the file path before deleting the template
+    const filePath = template.path;
+
+    // Delete the template from the database
+    await template.destroy();
+
+    // Remove the file
+    try {
+      fs.unlinkSync(filePath);
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
+
+    // Clean up in-memory storage
+    const templateIndex = templates.findIndex(t => t.id === req.params.id);
+    if (templateIndex !== -1) {
+      templates.splice(templateIndex, 1);
+    }
+    if (templateValues[req.params.id]) {
+      delete templateValues[req.params.id];
+    }
+
+    res.status(204).send();
   } catch (error) {
-    console.error('Error deleting file:', error);
+    console.error('Error deleting template:', error);
+    res.status(500).json({ message: 'Failed to delete template' });
   }
-
-  // Remove from the array and any saved values
-  templates.splice(templateIndex, 1);
-  if (templateValues[req.params.id]) {
-    delete templateValues[req.params.id];
-  }
-
-  res.status(204).send();
 });
 
 module.exports = router;

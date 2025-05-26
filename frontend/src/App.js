@@ -5,6 +5,7 @@ import UploadTemplate from './pages/UploadTemplate';
 import TemplatesList from './pages/TemplatesList';
 import TemplateEditor from './pages/TemplateEditor';
 import CounterpartiesList from './pages/CounterpartiesList';
+import Info from './pages/Info';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -21,6 +22,7 @@ function App() {
                 <Nav.Link href="/templates">Templates</Nav.Link>
                 <Nav.Link href="/upload">Upload Template</Nav.Link>
                 <Nav.Link href="/counterparties">Counterparties</Nav.Link>
+                <Nav.Link href="/info">Info</Nav.Link>
               </Nav>
             </Navbar.Collapse>
           </Container>
@@ -32,6 +34,7 @@ function App() {
             <Route path="/upload" element={<UploadTemplate />} />
             <Route path="/editor/:id" element={<TemplateEditor />} />
             <Route path="/counterparties" element={<CounterpartiesList />} />
+            <Route path="/info" element={<Info />} />
             <Route path="/" element={<Navigate to="/templates" replace />} />
           </Routes>
         </Container>

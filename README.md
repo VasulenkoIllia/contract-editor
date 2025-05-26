@@ -128,3 +128,34 @@ For Docker-based setup instructions, see [DOCKER.md](DOCKER.md). This is the rec
 - Counterparties management with database storage
 - Auto-fill form fields from saved counterparties
 - Full Docker support for easy deployment and development
+
+## Database Schema
+
+### Counterparty Model
+
+The Counterparty model stores information about entities that can be used as customers or performers in documents.
+
+| Field           | Type    | Description                                           | Required |
+|-----------------|---------|-------------------------------------------------------|----------|
+| id              | INTEGER | Primary key, auto-incremented                         | Yes      |
+| name            | STRING  | Person's name                                         | No       |
+| company         | STRING  | Company name                                          | Yes      |
+| director        | STRING  | Name of the company director                          | No       |
+| documentName    | STRING  | Name of the document that authorizes the counterparty | No       |
+| address         | STRING  | Physical address                                      | No       |
+| bankAccount     | STRING  | Bank account number                                   | No       |
+| bank            | STRING  | Bank name                                             | No       |
+| bankCode        | STRING  | Bank identification code                              | No       |
+| code            | STRING  | Company identification code                           | No       |
+| individualCode  | STRING  | Individual taxpayer number                            | No       |
+
+### Template Model
+
+The Template model stores information about document templates uploaded to the system. The model uses the built-in `createdAt` field from Sequelize to track when templates were uploaded.
+
+| Field           | Type    | Description                                           | Required |
+|-----------------|---------|-------------------------------------------------------|----------|
+| id              | INTEGER | Primary key, auto-incremented                         | Yes      |
+| originalName    | STRING  | Original filename of the uploaded template            | Yes      |
+| filename        | STRING  | Filename after processing by the system               | Yes      |
+| path            | STRING  | File path where the template is stored                | Yes      |
