@@ -38,17 +38,23 @@ services:
       - /app/node_modules
     networks:
       - app-network
+    command: npm run dev
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: contract-editor-frontend
     restart: always
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
     networks:
       - app-network
 

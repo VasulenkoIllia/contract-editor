@@ -16,49 +16,36 @@ This guide explains how to set up and run the Contract Editor application using 
    cd contract-editor
    ```
 
-2. **Start the database**
+2. **Start the application**
 
    ```bash
    docker-compose up -d
    ```
 
-   This will start a PostgreSQL database container with the following configuration:
-   - Database name: `contract_editor`
-   - Username: `postgres`
-   - Password: `postgres`
-   - Port: `5432`
+   This will start the following containers:
+   - PostgreSQL database
+   - Backend Node.js server
+   - Frontend Nginx server
 
-3. **Install backend dependencies**
+3. **Access the application**
 
-   ```bash
-   cd backend
-   npm install
-   ```
+   The application will be available at http://localhost
 
-4. **Install frontend dependencies**
+   The backend API will be available at http://localhost/api
 
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+## Environment Variables
 
-5. **Start the backend server**
+You can customize the application by setting the following environment variables:
 
-   ```bash
-   cd ../backend
-   npm start
-   ```
+- `DB_USER`: Database username (default: postgres)
+- `DB_PASSWORD`: Database password (default: postgres)
+- `DB_NAME`: Database name (default: contract_editor)
+- `DB_PORT`: Database port (default: 5432)
 
-   The backend server will run on http://localhost:5000
-
-6. **Start the frontend development server**
-
-   ```bash
-   cd ../frontend
-   npm start
-   ```
-
-   The frontend application will be available at http://localhost:3000
+Example:
+```bash
+DB_USER=myuser DB_PASSWORD=mypassword docker-compose up -d
+```
 
 ## Database Structure
 
@@ -83,16 +70,44 @@ Stores information about counterparties (customers, performers) with the followi
 
 ## Stopping the Application
 
-1. Stop the frontend and backend servers by pressing `Ctrl+C` in their respective terminal windows.
+To stop all containers:
 
-2. Stop the database container:
+```bash
+docker-compose down
+```
+
+To stop all containers and remove volumes (this will delete all data):
+
+```bash
+docker-compose down -v
+```
+
+## Development Mode
+
+If you want to run the application in development mode (with hot reloading):
+
+1. Use the provided docker-compose.dev.yml file:
 
    ```bash
-   docker-compose down
+   docker-compose -f docker-compose.dev.yml up -d
    ```
 
-   To remove the database volume as well (this will delete all data):
+   This will start the following containers:
+   - PostgreSQL database
+   - Backend Node.js server in development mode
+   - Frontend React development server
+
+2. Access the application:
+
+   The frontend will be available at http://localhost:3000
+   The backend API will be available at http://localhost:5000/api
+
+3. Make changes to the code:
+
+   Any changes you make to the frontend or backend code will be automatically detected and the application will reload.
+
+4. Stop the development containers:
 
    ```bash
-   docker-compose down -v
+   docker-compose -f docker-compose.dev.yml down
    ```

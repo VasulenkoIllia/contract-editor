@@ -45,11 +45,11 @@ contract-editor/
 ## Installation and Setup
 
 ### Prerequisites
-- Node.js (v14 or later)
-- npm or yarn
-- Docker and Docker Compose (for database deployment)
+- Node.js (v14 or later) - only needed for local development
+- npm or yarn - only needed for local development
+- Docker and Docker Compose (for full application deployment)
 
-For Docker-based setup instructions, see [DOCKER.md](DOCKER.md)
+For Docker-based setup instructions, see [DOCKER.md](DOCKER.md). This is the recommended way to run the application.
 
 ### Backend Setup
 1. Navigate to the backend directory:
@@ -127,4 +127,4 @@ For Docker-based setup instructions, see [DOCKER.md](DOCKER.md)
 - Responsive design for different screen sizes
 - Counterparties management with database storage
 - Auto-fill form fields from saved counterparties
-- Docker support for database deployment
+- Full Docker support for easy deployment and development
