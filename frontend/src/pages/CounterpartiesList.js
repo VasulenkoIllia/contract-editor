@@ -12,10 +12,15 @@ const CounterpartiesList = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCounterparty, setEditingCounterparty] = useState(null);
   const [formData, setFormData] = useState({
+    genericName: '',
+    signatureName: '',
     company: '',
     director: '',
     documentName: '',
     address: '',
+    postAddress: '',
+    phone: '',
+    email: '',
     bankAccount: '',
     bank: '',
     bankCode: '',
@@ -62,10 +67,15 @@ const CounterpartiesList = () => {
   const handleAddNew = () => {
     setEditingCounterparty(null);
     setFormData({
+      genericName: '',
+      signatureName: '',
       company: '',
       director: '',
       documentName: '',
       address: '',
+      postAddress: '',
+      phone: '',
+      email: '',
       bankAccount: '',
       bank: '',
       bankCode: '',
@@ -79,10 +89,15 @@ const CounterpartiesList = () => {
   const handleEdit = (counterparty) => {
     setEditingCounterparty(counterparty);
     setFormData({
+      genericName: counterparty.genericName || '',
+      signatureName: counterparty.signatureName || '',
       company: counterparty.company || '',
       director: counterparty.director || '',
       documentName: counterparty.documentName || '',
       address: counterparty.address || '',
+      postAddress: counterparty.postAddress || '',
+      phone: counterparty.phone || '',
+      email: counterparty.email || '',
       bankAccount: counterparty.bankAccount || '',
       bank: counterparty.bank || '',
       bankCode: counterparty.bankCode || '',
@@ -211,117 +226,160 @@ const CounterpartiesList = () => {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Company Name*</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Director</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="director"
-                    value={formData.director}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Generic Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="genericName"
+                value={formData.genericName}
+                onChange={handleInputChange}
+                placeholder="Степанюка Павла Васильовича"
+              />
+            </Form.Group>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Document Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="documentName"
-                    value={formData.documentName}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Address</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Signature Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="signatureName"
+                value={formData.signatureName}
+                onChange={handleInputChange}
+                placeholder="Павло СТЕПАНЮК"
+              />
+            </Form.Group>
 
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank Account</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bankAccount"
-                    value={formData.bankAccount}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bank"
-                    value={formData.bank}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bankCode"
-                    value={formData.bankCode}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Company Name*</Form.Label>
+              <Form.Control
+                type="text"
+                name="company"
+                value={formData.company}
+                onChange={handleInputChange}
+                required
+                placeholder="ФОП, ТзОВ"
+              />
+            </Form.Group>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="code"
-                    value={formData.code}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Individual Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="individualCode"
-                    value={formData.individualCode}
-                    onChange={handleInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Director</Form.Label>
+              <Form.Control
+                type="text"
+                name="director"
+                value={formData.director}
+                onChange={handleInputChange}
+                placeholder="Степанюк Павло Васильович"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Document Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="documentName"
+                value={formData.documentName}
+                onChange={handleInputChange}
+                placeholder="Виписка Статут"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Address</Form.Label>
+              <Form.Control
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                placeholder="44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Postal Address</Form.Label>
+              <Form.Control
+                type="text"
+                name="postAddress"
+                value={formData.postAddress}
+                onChange={handleInputChange}
+                placeholder="44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Phone</Form.Label>
+              <Form.Control
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="+380996644888"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="firma@gmail.com"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Bank Account</Form.Label>
+              <Form.Control
+                type="text"
+                name="bankAccount"
+                value={formData.bankAccount}
+                onChange={handleInputChange}
+                placeholder="UA063052990000026004020811892"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Bank</Form.Label>
+              <Form.Control
+                type="text"
+                name="bank"
+                value={formData.bank}
+                onChange={handleInputChange}
+                placeholder="Назва банку"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Bank Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="bankCode"
+                value={formData.bankCode}
+                onChange={handleInputChange}
+                placeholder="МФО"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="code"
+                value={formData.code}
+                onChange={handleInputChange}
+                placeholder="ЄДРПОУ"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Individual Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="individualCode"
+                value={formData.individualCode}
+                onChange={handleInputChange}
+                placeholder="ІПН"
+              />
+            </Form.Group>
 
             <div className="d-flex justify-content-end">
               <Button variant="secondary" className="me-2" onClick={() => setShowModal(false)}>

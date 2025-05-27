@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, Table, Button, Alert, Spinner, Modal } from 'react-bootstrap';
+import {Container, Card, Table, Button, Alert, Spinner, Modal, Form} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -12,6 +12,12 @@ const TemplatesList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // State for rename modal
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [templateToRename, setTemplateToRename] = useState(null);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [renameLoading, setRenameLoading] = useState(false);
 
   // Fetch templates on component mount
   useEffect(() => {
@@ -65,6 +71,47 @@ const TemplatesList = () => {
       setError('Error deleting template. Please try again.');
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  // Handle template renaming
+  const handleRenameClick = (template) => {
+    setTemplateToRename(template);
+    // Remove .docx extension if present for editing
+    const baseName = template.originalName.replace(/\.docx$/i, '');
+    setNewTemplateName(baseName);
+    setShowRenameModal(true);
+  };
+
+  const confirmRename = async () => {
+    if (!templateToRename || !newTemplateName.trim()) return;
+
+    try {
+      setRenameLoading(true);
+
+      // Add .docx extension to the new name
+      const newNameWithExtension = `${newTemplateName}.docx`;
+
+      const response = await axios.patch(`/api/templates/${templateToRename.id}/rename`, {
+        newName: newNameWithExtension
+      });
+
+      // Update template in state
+      setTemplates(templates.map(t =>
+        t.id === templateToRename.id
+          ? { ...t, originalName: response.data.template.originalName }
+          : t
+      ));
+
+      // Close modal
+      setShowRenameModal(false);
+      setTemplateToRename(null);
+      setNewTemplateName('');
+    } catch (err) {
+      console.error('Error renaming template:', err);
+      setError('Error renaming template. Please try again.');
+    } finally {
+      setRenameLoading(false);
     }
   };
 
@@ -132,6 +179,14 @@ const TemplatesList = () => {
                         Edit
                       </Button>
                       <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => handleRenameClick(template)}
+                      >
+                        Rename
+                      </Button>
+                      <Button
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleDeleteClick(template)}
@@ -168,6 +223,39 @@ const TemplatesList = () => {
                 <span className="ms-2">Deleting...</span>
               </>
             ) : 'Delete'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Rename Modal */}
+      <Modal show={showRenameModal} onHide={() => setShowRenameModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Rename Template</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>New Template Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                placeholder="Enter new template name"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowRenameModal(false)} disabled={renameLoading}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={confirmRename} disabled={renameLoading || !newTemplateName.trim()}>
+            {renameLoading ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                <span className="ms-2">Renaming...</span>
+              </>
+            ) : 'Rename'}
           </Button>
         </Modal.Footer>
       </Modal>

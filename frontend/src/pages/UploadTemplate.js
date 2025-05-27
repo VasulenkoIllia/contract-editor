@@ -201,10 +201,17 @@ const UploadTemplate = () => {
         </Card.Header>
         <Card.Body>
           <p>Upload a Word document (.docx) containing placeholders in the format:</p>
-          <ul>
-            <li><code>{'{customer.name}'}</code> - Customer's name</li>
-            <li><code>{'{order.date}'}</code> - Order date</li>
-            <li><code>{'{product.description}'}</code> - Product description</li>
+          <ul className="table-bordered text-success">
+            <p2>Correct</p2>
+            <li><code>{'{customer.company}'}</code> - Customer Data</li>
+            <li><code>{'{performer.company}'}</code> - Performer Data</li>
+            <li><code>{'{agreement.SubscriptionPrice}'}</code> - Agreement Data</li>
+          </ul>
+          <ul className="table-bordered text-danger">
+            <p2>Incorrect</p2>
+            <li><code>{'{customer. company}'}</code> - Customer Data</li>
+            <li><code>{'{performer .company}'}</code> - Performer Data</li>
+            <li><code>{'{ agreement . SubscriptionPrice }'}</code> - Agreement Data</li>
           </ul>
           <p>The system will automatically detect these placeholders and create form fields for them.</p>
         </Card.Body>

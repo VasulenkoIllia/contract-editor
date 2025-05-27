@@ -4,148 +4,113 @@ import { Container, Card, Table } from 'react-bootstrap';
 const Info = () => {
   return (
     <Container>
-      <h1 className="mb-4">Database Information</h1>
+      <h1 className="mb-4">Field Information</h1>
 
       <Card className="mb-4">
         <Card.Header>
-          <h2>Counterparty Model</h2>
+          <h2>Available Fields</h2>
         </Card.Header>
         <Card.Body>
-          <p>The Counterparty model stores information about entities that can be used as customers or performers in documents.</p>
+          <p>The following fields can be used in document templates:</p>
 
           <Table striped bordered hover responsive>
             <thead>
               <tr>
                 <th>Field</th>
-                <th>Type</th>
                 <th>Description</th>
-                <th>Required</th>
+                <th>Example</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>id</td>
-                <td>INTEGER</td>
-                <td>Primary key, auto-incremented</td>
-                <td>Yes</td>
-              </tr>
-              <tr>
-                <td>name</td>
-                <td>STRING</td>
-                <td>Person's name</td>
-                <td>No</td>
+                <td>genericName</td>
+                <td>Ім'я особи в родовому відмінку</td>
+                <td>Степанюка Павла Васильовича</td>
               </tr>
               <tr>
                 <td>company</td>
-                <td>STRING</td>
-                <td>Company name</td>
-                <td>Yes</td>
+                <td>Назва компанії</td>
+                <td>ФОП, ТзОВ</td>
               </tr>
               <tr>
                 <td>director</td>
-                <td>STRING</td>
-                <td>Name of the company director</td>
-                <td>No</td>
+                <td>Ім'я Директора</td>
+                <td>Степанюк Павло Васильович</td>
               </tr>
               <tr>
                 <td>documentName</td>
-                <td>STRING</td>
-                <td>Name of the document that authorizes the counterparty</td>
-                <td>No</td>
+                <td>Документ компанії</td>
+                <td>Виписка Статут</td>
               </tr>
               <tr>
                 <td>address</td>
-                <td>STRING</td>
-                <td>Physical address</td>
-                <td>No</td>
+                <td>Юридична адреса</td>
+                <td>44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30</td>
               </tr>
               <tr>
                 <td>bankAccount</td>
-                <td>STRING</td>
-                <td>Bank account number</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td>bank</td>
-                <td>STRING</td>
-                <td>Bank name</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td>bankCode</td>
-                <td>STRING</td>
-                <td>Bank identification code</td>
-                <td>No</td>
+                <td>Номер рахунку</td>
+                <td>UA063052990000026004020811892</td>
               </tr>
               <tr>
                 <td>code</td>
-                <td>STRING</td>
-                <td>Company identification code</td>
-                <td>No</td>
+                <td>Код фірми</td>
+                <td>ЄДРПОУ</td>
               </tr>
               <tr>
                 <td>individualCode</td>
-                <td>STRING</td>
-                <td>Individual taxpayer number</td>
-                <td>No</td>
-              </tr>
-            </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
-
-      <Card className="mb-4">
-        <Card.Header>
-          <h2>Template Model</h2>
-        </Card.Header>
-        <Card.Body>
-          <p>The Template model stores information about document templates uploaded to the system. The model uses the built-in <code>createdAt</code> field from Sequelize to track when templates were uploaded.</p>
-
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>Field</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Required</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>id</td>
-                <td>INTEGER</td>
-                <td>Primary key, auto-incremented</td>
-                <td>Yes</td>
+                <td>Код фізичної особи</td>
+                <td>ІПН</td>
               </tr>
               <tr>
-                <td>originalName</td>
-                <td>STRING</td>
-                <td>Original filename of the uploaded template</td>
-                <td>Yes</td>
+                <td>bankCode</td>
+                <td>Код банку</td>
+                <td>МФО</td>
               </tr>
               <tr>
-                <td>filename</td>
-                <td>STRING</td>
-                <td>Filename after processing by the system</td>
-                <td>Yes</td>
+                <td>postAddress</td>
+                <td>Адреса для фізичних листів</td>
+                <td>44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30</td>
               </tr>
               <tr>
-                <td>path</td>
-                <td>STRING</td>
-                <td>File path where the template is stored</td>
-                <td>Yes</td>
+                <td>email</td>
+                <td>Почта для листуванню</td>
+                <td>firma@gmail.com</td>
               </tr>
               <tr>
-                <td>createdAt</td>
-                <td>DATE</td>
-                <td>Date when the template was created (automatically managed by Sequelize)</td>
-                <td>Yes</td>
+                <td>phone</td>
+                <td>Контакнтий телефон</td>
+                <td>+380996644888</td>
               </tr>
               <tr>
-                <td>updatedAt</td>
-                <td>DATE</td>
-                <td>Date when the template was last updated (automatically managed by Sequelize)</td>
-                <td>Yes</td>
+                <td>signatureName</td>
+                <td>Підпис що буде в реквізитах</td>
+                <td>Павло СТЕПАНЮК</td>
+              </tr>
+              <tr>
+                <td>agreement.number</td>
+                <td>Номер документу</td>
+                <td>22-45/2025</td>
+              </tr>
+              <tr>
+                <td>agreement.dateStart</td>
+                <td>Дата договору</td>
+                <td>08.06.2024</td>
+              </tr>
+              <tr>
+                <td>agreement.dateEnd</td>
+                <td>Дата закінчення договору</td>
+                <td>Останній день цього року</td>
+              </tr>
+              <tr>
+                <td>agreement.SubscriptionPrice</td>
+                <td>Ціна абонентської плати</td>
+                <td>650 грн. (Шістсот п'ятдесят гривень 00 копійок).</td>
+              </tr>
+              <tr>
+                <td>agreement.OneHourPrice</td>
+                <td>Ціна 1 години роботи</td>
+                <td>500 грн. (п'ятсот грн. нуль коп.)</td>
               </tr>
             </tbody>
           </Table>

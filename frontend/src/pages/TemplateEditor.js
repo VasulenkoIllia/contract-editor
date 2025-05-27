@@ -18,6 +18,8 @@ const TemplateEditor = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [exportError, setExportError] = useState('');
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFilename, setExportFilename] = useState('');
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -32,11 +34,15 @@ const TemplateEditor = () => {
 
   // New counterparty form state
   const [newCounterpartyForm, setNewCounterpartyForm] = useState({
-    name: '',
+    genericName: '',
+    signatureName: '',
     company: '',
     director: '',
     documentName: '',
     address: '',
+    postAddress: '',
+    phone: '',
+    email: '',
     bankAccount: '',
     bank: '',
     bankCode: '',
@@ -118,8 +124,14 @@ const TemplateEditor = () => {
       const placeholderLower = placeholder.toLowerCase();
       const fieldWithoutBraces = placeholder.replace(/[{}]/g, '');
 
-      // Check if this is a customer field
-      if (placeholderLower.startsWith('{customer.')) {
+      // Only fill customer-related fields
+      // Check if this is a customer field and not a performer field
+      if (placeholderLower.startsWith('{customer.') &&
+          !placeholderLower.includes('performer') &&
+          !placeholderLower.includes('executor') &&
+          !placeholderLower.includes('contractor') &&
+          !placeholderLower.includes('seller') &&
+          !placeholderLower.includes('provider')) {
         // Extract the field name after customer.
         const fieldName = fieldWithoutBraces.split('.')[1].toLowerCase();
 
@@ -130,6 +142,12 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.director;
         } else if (fieldName === 'address' && counterparty.address && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.address;
+        } else if (fieldName === 'postaddress' && counterparty.postAddress && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.postAddress;
+        } else if (fieldName === 'phone' && counterparty.phone && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.phone;
+        } else if (fieldName === 'email' && counterparty.email && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.email;
         } else if (fieldName === 'bank' && counterparty.bank && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bank;
         } else if (fieldName === 'bankaccount' && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
@@ -142,22 +160,35 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.individualCode;
         } else if ((fieldName === 'documentname' || fieldName === 'document') && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
-        } else if (fieldName === 'name' && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
-          newValues[placeholder] = counterparty.name;
+        } else if (fieldName === 'genericname' && counterparty.genericName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.genericName;
+        } else if (fieldName === 'signaturename' && counterparty.signatureName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.signatureName;
         }
       }
       // More general matching for customer-related fields
       else if (
         (placeholderLower.includes('customer') ||
          placeholderLower.includes('client') ||
-         placeholderLower.includes('buyer'))
+         placeholderLower.includes('buyer')) &&
+        !placeholderLower.includes('performer') &&
+        !placeholderLower.includes('executor') &&
+        !placeholderLower.includes('contractor') &&
+        !placeholderLower.includes('seller') &&
+        !placeholderLower.includes('provider')
       ) {
         if (placeholderLower.includes('company') && counterparty.company && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.company;
         } else if (placeholderLower.includes('director') && counterparty.director && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.director;
-        } else if (placeholderLower.includes('address') && counterparty.address && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if (placeholderLower.includes('address') && !placeholderLower.includes('post') && counterparty.address && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.address;
+        } else if ((placeholderLower.includes('postaddress') || placeholderLower.includes('post_address') || placeholderLower.includes('postAddress')) && counterparty.postAddress && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.postAddress;
+        } else if (placeholderLower.includes('phone') && counterparty.phone && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.phone;
+        } else if (placeholderLower.includes('email') && counterparty.email && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.email;
         } else if (placeholderLower.includes('bank') && !placeholderLower.includes('code') && !placeholderLower.includes('account') && counterparty.bank && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bank;
         } else if ((placeholderLower.includes('bankaccount') || placeholderLower.includes('bank_account') || placeholderLower.includes('bankAccount')) && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
@@ -170,8 +201,12 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.individualCode;
         } else if ((placeholderLower.includes('document') || placeholderLower.includes('documentname') || placeholderLower.includes('documentName')) && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
-        } else if (placeholderLower.includes('name') && !placeholderLower.includes('document') && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
-          newValues[placeholder] = counterparty.name;
+        } else if ((placeholderLower.includes('genericname') || placeholderLower.includes('generic_name') || placeholderLower.includes('genericName')) && counterparty.genericName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.genericName;
+        } else if ((placeholderLower.includes('signaturename') || placeholderLower.includes('signature_name') || placeholderLower.includes('signatureName')) && counterparty.signatureName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.signatureName;
+        } else if (placeholderLower.includes('name') && !placeholderLower.includes('document') && !placeholderLower.includes('generic') && !placeholderLower.includes('signature') && counterparty.genericName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.genericName;
         }
       }
     });
@@ -194,8 +229,12 @@ const TemplateEditor = () => {
       const placeholderLower = placeholder.toLowerCase();
       const fieldWithoutBraces = placeholder.replace(/[{}]/g, '');
 
-      // Check if this is a performer field
-      if (placeholderLower.startsWith('{performer.')) {
+      // Only fill performer-related fields
+      // Check if this is a performer field and not a customer field
+      if (placeholderLower.startsWith('{performer.') &&
+          !placeholderLower.includes('customer') &&
+          !placeholderLower.includes('client') &&
+          !placeholderLower.includes('buyer')) {
         // Extract the field name after performer.
         const fieldName = fieldWithoutBraces.split('.')[1].toLowerCase();
 
@@ -206,6 +245,12 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.director;
         } else if (fieldName === 'address' && counterparty.address && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.address;
+        } else if (fieldName === 'postaddress' && counterparty.postAddress && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.postAddress;
+        } else if (fieldName === 'phone' && counterparty.phone && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.phone;
+        } else if (fieldName === 'email' && counterparty.email && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.email;
         } else if (fieldName === 'bank' && counterparty.bank && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bank;
         } else if (fieldName === 'bankaccount' && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
@@ -218,8 +263,10 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.individualCode;
         } else if ((fieldName === 'documentname' || fieldName === 'document') && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
-        } else if (fieldName === 'name' && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
-          newValues[placeholder] = counterparty.name;
+        } else if (fieldName === 'genericname' && counterparty.genericName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.genericName;
+        } else if (fieldName === 'signaturename' && counterparty.signatureName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.signatureName;
         }
       }
       // More general matching for performer-related fields
@@ -228,14 +275,23 @@ const TemplateEditor = () => {
          placeholderLower.includes('executor') ||
          placeholderLower.includes('contractor') ||
          placeholderLower.includes('seller') ||
-         placeholderLower.includes('provider'))
+         placeholderLower.includes('provider')) &&
+        !placeholderLower.includes('customer') &&
+        !placeholderLower.includes('client') &&
+        !placeholderLower.includes('buyer')
       ) {
         if (placeholderLower.includes('company') && counterparty.company && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.company;
         } else if (placeholderLower.includes('director') && counterparty.director && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.director;
-        } else if (placeholderLower.includes('address') && counterparty.address && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+        } else if (placeholderLower.includes('address') && !placeholderLower.includes('post') && counterparty.address && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.address;
+        } else if ((placeholderLower.includes('postaddress') || placeholderLower.includes('post_address') || placeholderLower.includes('postAddress')) && counterparty.postAddress && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.postAddress;
+        } else if (placeholderLower.includes('phone') && counterparty.phone && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.phone;
+        } else if (placeholderLower.includes('email') && counterparty.email && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.email;
         } else if (placeholderLower.includes('bank') && !placeholderLower.includes('code') && !placeholderLower.includes('account') && counterparty.bank && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.bank;
         } else if ((placeholderLower.includes('bankaccount') || placeholderLower.includes('bank_account') || placeholderLower.includes('bankAccount')) && counterparty.bankAccount && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
@@ -248,8 +304,12 @@ const TemplateEditor = () => {
           newValues[placeholder] = counterparty.individualCode;
         } else if ((placeholderLower.includes('document') || placeholderLower.includes('documentname') || placeholderLower.includes('documentName')) && counterparty.documentName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
           newValues[placeholder] = counterparty.documentName;
-        } else if (placeholderLower.includes('name') && !placeholderLower.includes('document') && counterparty.name && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
-          newValues[placeholder] = counterparty.name;
+        } else if ((placeholderLower.includes('genericname') || placeholderLower.includes('generic_name') || placeholderLower.includes('genericName')) && counterparty.genericName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.genericName;
+        } else if ((placeholderLower.includes('signaturename') || placeholderLower.includes('signature_name') || placeholderLower.includes('signatureName')) && counterparty.signatureName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.signatureName;
+        } else if (placeholderLower.includes('name') && !placeholderLower.includes('document') && !placeholderLower.includes('generic') && !placeholderLower.includes('signature') && counterparty.genericName && (!newValues[placeholder] || newValues[placeholder].trim() === '')) {
+          newValues[placeholder] = counterparty.genericName;
         }
       }
     });
@@ -277,8 +337,8 @@ const TemplateEditor = () => {
       setCreateCounterpartyError('');
       setCreateCounterpartySuccess(false);
 
-      if (!newCounterpartyForm.name.trim() || !newCounterpartyForm.company.trim()) {
-        setCreateCounterpartyError('Name and Company are required');
+      if (!newCounterpartyForm.company.trim()) {
+        setCreateCounterpartyError('Company is required');
         setCreateCounterpartyLoading(false);
         return;
       }
@@ -299,11 +359,15 @@ const TemplateEditor = () => {
 
       // Reset form
       setNewCounterpartyForm({
-        name: '',
+        genericName: '',
+        signatureName: '',
         company: '',
         director: '',
         documentName: '',
         address: '',
+        postAddress: '',
+        phone: '',
+        email: '',
         bankAccount: '',
         bank: '',
         bankCode: '',
@@ -437,31 +501,31 @@ const TemplateEditor = () => {
 
     return template.placeholders.filter(placeholder => {
       const placeholderLower = placeholder.toLowerCase();
+      // Allow all counterparty fields to be used as both customer and performer
       if (entity === 'customer') {
         return placeholderLower.includes('customer') ||
                placeholderLower.includes('client') ||
-               placeholderLower.includes('buyer');
+               placeholderLower.includes('buyer') ||
+               // Include counterparty fields that don't have a specific prefix
+               (placeholderLower.includes('counterparty') &&
+                !placeholderLower.includes('performer') &&
+                !placeholderLower.includes('executor') &&
+                !placeholderLower.includes('contractor') &&
+                !placeholderLower.includes('seller') &&
+                !placeholderLower.includes('provider'));
       } else if (entity === 'performer') {
         return placeholderLower.includes('performer') ||
                placeholderLower.includes('executor') ||
                placeholderLower.includes('contractor') ||
                placeholderLower.includes('seller') ||
-               placeholderLower.includes('provider');
-      } else if (entity === 'document') {
-        return placeholderLower.includes('document') ||
-               placeholderLower.includes('contract');
-      } else if (entity === 'other') {
-        // Fields that don't belong to customer, performer, or document
-        return !placeholderLower.includes('customer') &&
-               !placeholderLower.includes('client') &&
-               !placeholderLower.includes('buyer') &&
-               !placeholderLower.includes('performer') &&
-               !placeholderLower.includes('executor') &&
-               !placeholderLower.includes('contractor') &&
-               !placeholderLower.includes('seller') &&
-               !placeholderLower.includes('provider') &&
-               !placeholderLower.includes('document') &&
-               !placeholderLower.includes('contract');
+               placeholderLower.includes('provider') ||
+               // Include counterparty fields that don't have a specific prefix
+               (placeholderLower.includes('counterparty') &&
+                !placeholderLower.includes('customer') &&
+                !placeholderLower.includes('client') &&
+                !placeholderLower.includes('buyer'));
+      } else if (entity === 'agreement') {
+        return placeholderLower.includes('agreement');
       }
       return false;
     });
@@ -483,8 +547,67 @@ const TemplateEditor = () => {
   const getInputType = (placeholder) => {
     const lowerPlaceholder = placeholder.toLowerCase();
     if (lowerPlaceholder.includes('date')) return 'date';
-    if (lowerPlaceholder.includes('number') || lowerPlaceholder.includes('amount')) return 'number';
+    // Agreement Number should be a string, not just a number
+    if ((lowerPlaceholder.includes('number') || lowerPlaceholder.includes('amount')) &&
+        !lowerPlaceholder.includes('agreement.number')) return 'number';
     return 'text';
+  };
+
+  // Get default value for a placeholder
+  const getDefaultValue = (placeholder) => {
+    const lowerPlaceholder = placeholder.toLowerCase();
+    if (lowerPlaceholder === 'agreement.dateend') {
+      // Set default to December 31, 2025
+      return '2025-12-31';
+    }
+    return '';
+  };
+
+  // Get placeholder example for a field
+  const getPlaceholderExample = (placeholder) => {
+    const lowerPlaceholder = placeholder.toLowerCase();
+    if (lowerPlaceholder === 'agreement.number') {
+      return '22-45/2025';
+    } else if (lowerPlaceholder === 'agreement.datestart') {
+      return '08.06.2024';
+    } else if (lowerPlaceholder === 'agreement.dateend') {
+      return 'Останній день цього року';
+    } else if (lowerPlaceholder === 'agreement.subscriptionprice') {
+      return '650 грн. (Шістсот п\'ятдесят гривень 00 копійок).';
+    } else if (lowerPlaceholder === 'agreement.onehourprice') {
+      return '500 грн. (п\'ятсот грн. нуль коп.)';
+    } else if (lowerPlaceholder.includes('genericname')) {
+      return 'Степанюка Павла Васильовича';
+    } else if (lowerPlaceholder.includes('signaturename')) {
+      return 'Павло СТЕПАНЮК';
+    } else if (lowerPlaceholder.includes('company')) {
+      return 'ФОП, ТзОВ';
+    } else if (lowerPlaceholder.includes('director')) {
+      return 'Степанюк Павло Васильович';
+    } else if (lowerPlaceholder.includes('documentname')) {
+      return 'Виписка Статут';
+    } else if (lowerPlaceholder.includes('address') && !lowerPlaceholder.includes('post')) {
+      return '44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30';
+    } else if (lowerPlaceholder.includes('postaddress')) {
+      return '44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30';
+    } else if (lowerPlaceholder.includes('phone')) {
+      return '+380996644888';
+    } else if (lowerPlaceholder.includes('email')) {
+      return 'firma@gmail.com';
+    } else if (lowerPlaceholder.includes('bankaccount')) {
+      return 'UA063052990000026004020811892';
+    } else if (lowerPlaceholder.includes('bank') && !lowerPlaceholder.includes('code') && !lowerPlaceholder.includes('account')) {
+      return 'Назва банку';
+    } else if (lowerPlaceholder.includes('bankcode')) {
+      return 'МФО';
+    } else if (lowerPlaceholder.includes('code') && !lowerPlaceholder.includes('bank') && !lowerPlaceholder.includes('individual')) {
+      return 'ЄДРПОУ';
+    } else if (lowerPlaceholder.includes('individualcode')) {
+      return 'ІПН';
+    }
+
+    // Default placeholder
+    return `Enter ${formatPlaceholder(placeholder).toLowerCase()}`;
   };
 
   // Save template values
@@ -512,6 +635,12 @@ const TemplateEditor = () => {
     }
   };
 
+  // Show export modal
+  const handleExportClick = () => {
+    setExportFilename(template.originalName.replace('.docx', ''));
+    setShowExportModal(true);
+  };
+
   // Export document
   const handleExport = async () => {
     try {
@@ -531,7 +660,8 @@ const TemplateEditor = () => {
       }
 
       const response = await axios.post(`/api/templates/${id}/export`, {
-        values: formValues
+        values: formValues,
+        customFilename: exportFilename
       }, {
         responseType: 'blob'
       });
@@ -540,12 +670,13 @@ const TemplateEditor = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${template.originalName.replace('.docx', '')}_filled.docx`);
+      link.setAttribute('download', `${exportFilename}.docx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
       setExportSuccess(true);
+      setShowExportModal(false);
     } catch (err) {
       setExportError('Error exporting document. Please try again.');
       console.error('Error exporting document:', err);
@@ -715,33 +846,7 @@ const TemplateEditor = () => {
               </div>
             </Card.Body>
             <Card.Footer>
-              {saveSuccess && (
-                <Alert variant="success" className="mb-3 py-2">
-                  Values saved successfully!
-                </Alert>
-              )}
-
-              {saveError && (
-                <Alert variant="danger" className="mb-3 py-2" dismissible onClose={() => setSaveError('')}>
-                  {saveError}
-                </Alert>
-              )}
-
               <div className="d-grid gap-2">
-                <Button
-                  variant="success"
-                  onClick={handleSave}
-                  disabled={saveLoading}
-                  className="mb-2"
-                >
-                  {saveLoading ? (
-                    <>
-                      <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                      <span className="ms-2">Saving...</span>
-                    </>
-                  ) : 'Save Values'}
-                </Button>
-
                 <div className="d-flex gap-2 mb-2">
                   <Button
                     variant="warning"
@@ -754,7 +859,7 @@ const TemplateEditor = () => {
 
                 <Button
                   variant="primary"
-                  onClick={handleExport}
+                  onClick={handleExportClick}
                   disabled={exportLoading}
                 >
                   {exportLoading ? (
@@ -828,24 +933,17 @@ const TemplateEditor = () => {
             <Button
               variant="success"
               size="lg"
+              className="mb-2"
               onClick={() => handleEntitySelect('performer')}
             >
               Edit Performer Fields
             </Button>
             <Button
-              variant="secondary"
-              size="lg"
-              onClick={() => handleEntitySelect('document')}
-            >
-              Edit Document Fields
-            </Button>
-            <Button
               variant="info"
               size="lg"
-              className="mt-2"
-              onClick={() => handleEntitySelect('other')}
+              onClick={() => handleEntitySelect('agreement')}
             >
-              Edit Other Document Data
+              Edit Agreement Fields
             </Button>
           </div>
         </Modal.Body>
@@ -867,7 +965,7 @@ const TemplateEditor = () => {
           <Modal.Title>
             {editingEntity === 'customer' ? 'Edit Customer Fields' :
              editingEntity === 'performer' ? 'Edit Performer Fields' :
-             editingEntity === 'document' ? 'Edit Document Fields' : 'Edit Other Document Data'}
+             'Edit Agreement Fields'}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -890,9 +988,9 @@ const TemplateEditor = () => {
                 <Form.Control
                   type={getInputType(placeholder)}
                   name={placeholder}
-                  value={formValues[placeholder] || ''}
+                  value={formValues[placeholder] || getDefaultValue(placeholder)}
                   onChange={handleInputChange}
-                  placeholder={`Enter ${formatPlaceholder(placeholder).toLowerCase()}`}
+                  placeholder={getPlaceholderExample(placeholder)}
                 />
               </Form.Group>
             ))}
@@ -938,57 +1036,61 @@ const TemplateEditor = () => {
           )}
 
           <Form>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Name*</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    value={newCounterpartyForm.name}
-                    onChange={handleNewCounterpartyInputChange}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Company*</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="company"
-                    value={newCounterpartyForm.company}
-                    onChange={handleNewCounterpartyInputChange}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Generic Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="genericName"
+                value={newCounterpartyForm.genericName}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="Степанюка Павла Васильовича"
+              />
+            </Form.Group>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Director</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="director"
-                    value={newCounterpartyForm.director}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Document Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="documentName"
-                    value={newCounterpartyForm.documentName}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Signature Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="signatureName"
+                value={newCounterpartyForm.signatureName}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="Павло СТЕПАНЮК"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Company*</Form.Label>
+              <Form.Control
+                type="text"
+                name="company"
+                value={newCounterpartyForm.company}
+                onChange={handleNewCounterpartyInputChange}
+                required
+                placeholder="ФОП, ТзОВ"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Director</Form.Label>
+              <Form.Control
+                type="text"
+                name="director"
+                value={newCounterpartyForm.director}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="Степанюк Павло Васильович"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Document Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="documentName"
+                value={newCounterpartyForm.documentName}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="Виписка Статут"
+              />
+            </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Address</Form.Label>
@@ -997,69 +1099,97 @@ const TemplateEditor = () => {
                 name="address"
                 value={newCounterpartyForm.address}
                 onChange={handleNewCounterpartyInputChange}
+                placeholder="44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30"
               />
             </Form.Group>
 
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bank"
-                    value={newCounterpartyForm.bank}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank Account</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bankAccount"
-                    value={newCounterpartyForm.bankAccount}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bank Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bankCode"
-                    value={newCounterpartyForm.bankCode}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Postal Address</Form.Label>
+              <Form.Control
+                type="text"
+                name="postAddress"
+                value={newCounterpartyForm.postAddress}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="44681, Волинська обл., Луцький р-н, с.Прилуьке, вул. Миру, будинок № 30"
+              />
+            </Form.Group>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="code"
-                    value={newCounterpartyForm.code}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Individual Code</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="individualCode"
-                    value={newCounterpartyForm.individualCode}
-                    onChange={handleNewCounterpartyInputChange}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Phone</Form.Label>
+              <Form.Control
+                type="text"
+                name="phone"
+                value={newCounterpartyForm.phone}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="+380996644888"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                name="email"
+                value={newCounterpartyForm.email}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="firma@gmail.com"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Bank Account</Form.Label>
+              <Form.Control
+                type="text"
+                name="bankAccount"
+                value={newCounterpartyForm.bankAccount}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="UA063052990000026004020811892"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Bank</Form.Label>
+              <Form.Control
+                type="text"
+                name="bank"
+                value={newCounterpartyForm.bank}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="Назва банку"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Bank Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="bankCode"
+                value={newCounterpartyForm.bankCode}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="МФО"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="code"
+                value={newCounterpartyForm.code}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="ЄДРПОУ"
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Individual Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="individualCode"
+                value={newCounterpartyForm.individualCode}
+                onChange={handleNewCounterpartyInputChange}
+                placeholder="ІПН"
+              />
+            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
@@ -1077,6 +1207,52 @@ const TemplateEditor = () => {
                 <span className="ms-2">Creating...</span>
               </>
             ) : 'Create Counterparty'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Export Document Modal */}
+      <Modal show={showExportModal} onHide={() => setShowExportModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Export Document</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {exportError && (
+            <Alert variant="danger" className="mb-3" dismissible onClose={() => setExportError('')}>
+              {exportError}
+            </Alert>
+          )}
+
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Document Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={exportFilename}
+                onChange={(e) => setExportFilename(e.target.value)}
+                placeholder="Enter document name (without extension)"
+              />
+              <Form.Text className="text-muted">
+                The document will be exported as [name].docx
+              </Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowExportModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleExport}
+            disabled={exportLoading}
+          >
+            {exportLoading ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                <span className="ms-2">Exporting...</span>
+              </>
+            ) : 'Export Document'}
           </Button>
         </Modal.Footer>
       </Modal>
