@@ -32,7 +32,7 @@ const testConnection = async () => {
 const initDb = async () => {
   try {
     // Sync all models
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: false });
     console.log('Database synchronized successfully');
   } catch (error) {
     console.error('Error synchronizing database:', error);
