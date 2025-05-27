@@ -72,7 +72,11 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
+    // Use custom filename if provided, otherwise use original name
+    const customFilename = req.body.customFilename ?
+      req.body.customFilename + path.extname(file.originalname) :
+      file.originalname;
+    cb(null, uniqueSuffix + '-' + customFilename);
   }
 });
 
@@ -94,10 +98,36 @@ const upload = multer({
 const templates = [];
 const templateValues = {}; // Store values for each template
 
+// Helper function to resolve file paths consistently
+const resolveFilePath = (filePath) => {
+  // If the path already exists, return it
+  if (fs.existsSync(filePath)) {
+    return filePath;
+  }
+
+  // Check if it's just a filename (no directory)
+  if (path.dirname(filePath) === '.') {
+    const resolvedPath = path.join(__dirname, '../uploads', filePath);
+    if (fs.existsSync(resolvedPath)) {
+      return resolvedPath;
+    }
+  }
+
+  // Try to resolve the path relative to the uploads directory
+  const resolvedPath = path.join(__dirname, '../uploads', path.basename(filePath));
+  if (fs.existsSync(resolvedPath)) {
+    return resolvedPath;
+  }
+
+  // If we get here, the file wasn't found
+  throw new Error(`File not found at path: ${filePath}`);
+};
+
 // Helper function to extract placeholders from document
 const extractPlaceholders = async (filePath) => {
   try {
-    const result = await mammoth.extractRawText({ path: filePath });
+    const resolvedPath = resolveFilePath(filePath);
+    const result = await mammoth.extractRawText({ path: resolvedPath });
     const text = result.value;
 
     // Find all placeholders in the format {placeholder}
@@ -119,14 +149,16 @@ router.post('/', upload.single('template'), async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    // Store only the filename instead of the full path
+    const filename = req.file.filename;
     const filePath = req.file.path;
     const placeholders = await extractPlaceholders(filePath);
 
     // Create template in database
     const dbTemplate = await Template.create({
       originalName: req.file.originalname,
-      filename: req.file.filename,
-      path: filePath
+      filename: filename,
+      path: filename // Store only the filename, not the full path
     });
 
     // Store in in-memory storage as well
@@ -161,13 +193,24 @@ router.get('/', async (req, res) => {
 
     // For each template, extract placeholders
     const templatesList = await Promise.all(dbTemplates.map(async template => {
-      const placeholders = await extractPlaceholders(template.path);
-      return {
-        id: template.id,
-        originalName: template.originalName,
-        uploadDate: template.createdAt,
-        placeholders: placeholders
-      };
+      try {
+        const placeholders = await extractPlaceholders(template.path);
+        return {
+          id: template.id,
+          originalName: template.originalName,
+          uploadDate: template.createdAt,
+          placeholders: placeholders
+        };
+      } catch (error) {
+        console.error(`Error extracting placeholders for template ${template.id}:`, error);
+        return {
+          id: template.id,
+          originalName: template.originalName,
+          uploadDate: template.createdAt,
+          placeholders: [],
+          error: 'Failed to extract placeholders'
+        };
+      }
     }));
 
     res.json(templatesList);
@@ -190,14 +233,27 @@ router.get('/:id', async (req, res) => {
     }
 
     // Extract placeholders from the template file
-    const placeholders = await extractPlaceholders(template.path);
+    let placeholders = [];
+    let extractError = null;
+    try {
+      placeholders = await extractPlaceholders(template.path);
+    } catch (error) {
+      console.error(`Error extracting placeholders for template ${template.id}:`, error);
+      extractError = 'Failed to extract placeholders';
+    }
 
-    res.json({
+    const response = {
       id: template.id,
       originalName: template.originalName,
       uploadDate: template.createdAt,
       placeholders: placeholders
-    });
+    };
+
+    if (extractError) {
+      response.error = extractError;
+    }
+
+    res.json(response);
   } catch (error) {
     console.error('Error fetching template:', error);
     res.status(500).json({ message: 'Failed to fetch template' });
@@ -216,8 +272,11 @@ router.post('/:id/preview', async (req, res) => {
 
     const { values, mode } = req.body;
 
+    // Resolve the file path
+    const resolvedPath = resolveFilePath(template.path);
+
     // Convert DOCX to HTML
-    const result = await mammoth.convertToHtml({ path: template.path });
+    const result = await mammoth.convertToHtml({ path: resolvedPath });
     let html = result.value;
 
     // Create normalized values with field name variations
@@ -263,7 +322,7 @@ router.post('/:id/export', async (req, res) => {
     }
 
     // Use saved values if they exist, otherwise use the values from the request
-    let { values } = req.body;
+    let { values, customFilename } = req.body;
 
     // Get values from in-memory storage
     const savedValues = templateValues[req.params.id];
@@ -275,6 +334,9 @@ router.post('/:id/export', async (req, res) => {
 
     // Create normalized values with field name variations
     const normalizedValues = createNormalizedValues(values);
+
+    // Resolve the file path
+    const resolvedPath = resolveFilePath(template.path);
 
     // Extract placeholders from the template file
     const placeholders = await extractPlaceholders(template.path);
@@ -291,7 +353,7 @@ router.post('/:id/export', async (req, res) => {
         const Docxtemplater = require('docxtemplater');
 
         // Read the original document content
-        const content = fs.readFileSync(template.path, 'binary');
+        const content = fs.readFileSync(resolvedPath, 'binary');
 
         // Create a zip object from the content
         const zip = new PizZip(content);
@@ -325,7 +387,10 @@ router.post('/:id/export', async (req, res) => {
         });
 
         // Send the document
-        res.setHeader('Content-Disposition', `attachment; filename=${template.originalName.replace('.docx', '')}_filled.docx`);
+        const exportFilename = customFilename ?
+          `${customFilename}.docx` :
+          `${template.originalName.replace('.docx', '')}_filled.docx`;
+        res.setHeader('Content-Disposition', `attachment; filename=${exportFilename}`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         res.send(buffer);
         return; // Exit early if successful
@@ -338,10 +403,10 @@ router.post('/:id/export', async (req, res) => {
       const PizZip = require('pizzip');
 
       // Read the original document content
-      const originalContent = fs.readFileSync(template.path);
+      const originalContent = fs.readFileSync(resolvedPath);
 
       // Create a temporary file for processing
-      const tempFilePath = path.join(path.dirname(template.path), `temp-${Date.now()}.docx`);
+      const tempFilePath = path.join(path.dirname(resolvedPath), `temp-${Date.now()}.docx`);
       fs.writeFileSync(tempFilePath, originalContent);
 
       // Load the document as a binary from the temporary file
@@ -400,7 +465,10 @@ router.post('/:id/export', async (req, res) => {
       }
 
       // Send the document
-      res.setHeader('Content-Disposition', `attachment; filename=${template.originalName.replace('.docx', '')}_filled.docx`);
+      const exportFilename = customFilename ?
+        `${customFilename}.docx` :
+        `${template.originalName.replace('.docx', '')}_filled.docx`;
+      res.setHeader('Content-Disposition', `attachment; filename=${exportFilename}`);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       res.send(buffer);
     } catch (innerError) {
@@ -465,6 +533,52 @@ router.get('/:id/values', async (req, res) => {
   }
 });
 
+// PATCH /api/templates/:id/rename - Rename a template
+router.patch('/:id/rename', async (req, res) => {
+  try {
+    const { newName } = req.body;
+
+    if (!newName || typeof newName !== 'string' || newName.trim() === '') {
+      return res.status(400).json({ message: 'New name is required' });
+    }
+
+    // Ensure the name ends with .docx
+    let finalName = newName;
+    if (!finalName.toLowerCase().endsWith('.docx')) {
+      finalName = `${finalName}.docx`;
+    }
+
+    // Find the template in the database
+    const template = await Template.findByPk(req.params.id);
+
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    // Update the template name
+    template.originalName = finalName;
+    await template.save();
+
+    // Update in-memory storage
+    const templateIndex = templates.findIndex(t => t.id === req.params.id);
+    if (templateIndex !== -1) {
+      templates[templateIndex].originalName = newName;
+    }
+
+    res.status(200).json({
+      message: 'Template renamed successfully',
+      template: {
+        id: template.id,
+        originalName: template.originalName,
+        uploadDate: template.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Error renaming template:', error);
+    res.status(500).json({ message: 'Failed to rename template' });
+  }
+});
+
 // DELETE /api/templates/:id - Delete a template
 router.delete('/:id', async (req, res) => {
   try {
@@ -476,16 +590,24 @@ router.delete('/:id', async (req, res) => {
     }
 
     // Get the file path before deleting the template
-    const filePath = template.path;
+    let filePath;
+    try {
+      filePath = resolveFilePath(template.path);
+    } catch (error) {
+      console.error('Error resolving file path:', error);
+      filePath = null;
+    }
 
     // Delete the template from the database
     await template.destroy();
 
-    // Remove the file
-    try {
-      fs.unlinkSync(filePath);
-    } catch (error) {
-      console.error('Error deleting file:', error);
+    // Remove the file if path was resolved
+    if (filePath) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (error) {
+        console.error('Error deleting file:', error);
+      }
     }
 
     // Clean up in-memory storage

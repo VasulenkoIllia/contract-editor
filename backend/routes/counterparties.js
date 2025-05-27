@@ -7,11 +7,15 @@ const Counterparty = require('../models/Counterparty');
 router.post('/', async (req, res) => {
   try {
     const {
-      name,
+      genericName,
+      signatureName,
       company,
       director,
       documentName,
       address,
+      postAddress,
+      phone,
+      email,
       bankAccount,
       bank,
       bankCode,
@@ -31,11 +35,15 @@ router.post('/', async (req, res) => {
     if (existingCounterparty) {
       // Update existing counterparty
       await existingCounterparty.update({
-        name,
+        genericName,
+        signatureName,
         company,
         director,
         documentName,
         address,
+        postAddress,
+        phone,
+        email,
         bankAccount,
         bank,
         bankCode,
@@ -51,11 +59,15 @@ router.post('/', async (req, res) => {
 
     // Create new counterparty
     const counterparty = await Counterparty.create({
-      name,
+      genericName,
+      signatureName,
       company,
       director,
       documentName,
       address,
+      postAddress,
+      phone,
+      email,
       bankAccount,
       bank,
       bankCode,
@@ -80,20 +92,11 @@ router.get('/', async (req, res) => {
     let whereClause = {};
 
     if (search) {
-      // Filter counterparties by name or company (case-insensitive)
+      // Filter counterparties by company only (case-insensitive)
       whereClause = {
-        [Op.or]: [
-          {
-            name: {
-              [Op.iLike]: `%${search}%`
-            }
-          },
-          {
-            company: {
-              [Op.iLike]: `%${search}%`
-            }
-          }
-        ]
+        company: {
+          [Op.iLike]: `%${search}%`
+        }
       };
     }
 

@@ -7,7 +7,11 @@ const Counterparty = sequelize.define('Counterparty', {
     primaryKey: true,
     autoIncrement: true
   },
-  name: {
+  genericName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  signatureName: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -24,6 +28,18 @@ const Counterparty = sequelize.define('Counterparty', {
     allowNull: true
   },
   address: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  postAddress: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  email: {
     type: DataTypes.STRING,
     allowNull: true
   },
