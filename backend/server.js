@@ -8,6 +8,8 @@ const { testConnection, initDb } = require('./config/db');
 const templatesRoutes = require('./routes/templates');
 const counterpartiesRoutes = require('./routes/counterparties');
 
+const { initializeDatabase } = require('./config/db');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -30,15 +32,8 @@ app.use((err, req, res, next) => {
 });
 
 // Initialize database and start server
-(async () => {
-  // Test database connection
-  await testConnection();
-
-  // Initialize database
-  await initDb();
-
-  // Start server
+initializeDatabase().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
-})();
+});
